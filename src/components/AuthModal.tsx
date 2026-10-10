@@ -32,14 +32,16 @@ export const AuthModal: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
 
   if (!isAuthModalOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
 
     if (authModalMode === 'login') {
       if (!email || !password) {
@@ -47,14 +49,21 @@ export const AuthModal: React.FC = () => {
         return;
       }
       setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        login(email);
+      const res = await login(email, password);
+      setIsLoading(false);
+
+      if (!res.success) {
+        setError(res.error || 'Invalid login credentials.');
+      } else {
         setIsAuthModalOpen(false);
-      }, 500);
+      }
     } else {
       if (!name || !email || !password) {
         setError('Please complete all required fields.');
+        return;
+      }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
         return;
       }
       if (password !== confirmPassword) {
@@ -66,11 +75,18 @@ export const AuthModal: React.FC = () => {
         return;
       }
       setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        register(name, email);
+      const res = await register(name, email, password);
+      setIsLoading(false);
+
+      if (!res.success) {
+        setError(res.error || 'Registration failed.');
+      } else if (res.message) {
+        setNotice(res.message);
+        setPassword('');
+        setConfirmPassword('');
+      } else {
         setIsAuthModalOpen(false);
-      }, 600);
+      }
     }
   };
 
@@ -97,6 +113,12 @@ export const AuthModal: React.FC = () => {
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC2626] font-medium">
               {error}
+            </div>
+          )}
+
+          {notice && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-[#15803D] font-medium leading-relaxed">
+              {notice}
             </div>
           )}
 

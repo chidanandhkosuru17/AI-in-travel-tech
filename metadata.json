@@ -2,5 +2,7 @@
   "name": "TBS RoamAgent",
   "description": "Agentic AI Multimodal Travel Concierge with intelligent trip planning, multimodal route comparison, disruption recovery, and women's safety center.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

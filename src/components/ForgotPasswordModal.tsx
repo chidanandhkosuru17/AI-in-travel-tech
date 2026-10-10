@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -10,17 +11,36 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setError('Please provide a valid email address.');
       return;
     }
     setError('');
-    setSubmitted(true);
+    setIsLoading(true);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false);
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err?.message || 'Unable to request password reset');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,7 +60,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
             </div>
             <h3 className="text-xl font-bold text-[#101828]">Reset Password</h3>
             <p className="text-sm text-[#667085] mt-1 mb-6">
-              Enter your registered email address and RoamAgent will send you a secure verification link to reset your password.
+              Enter your registered Supabase email address and RoamAgent will send you a secure verification link to reset your password.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -57,15 +77,22 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
                     required
                   />
                 </div>
-                {error && <p className="text-xs text-[#DC2626] mt-1">{error}</p>}
+                {error && <p className="text-xs text-[#DC2626] mt-1.5 font-medium">{error}</p>}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-[#0057FF] hover:bg-[#0045CC] text-white text-sm font-bold shadow-md shadow-[#0057FF]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                disabled={isLoading}
+                className="w-full py-3.5 rounded-xl bg-[#0057FF] hover:bg-[#0045CC] text-white text-sm font-bold shadow-md shadow-[#0057FF]/25 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
               >
-                <span>Send Reset Link</span>
-                <ArrowRight className="w-4 h-4" />
+                {isLoading ? (
+                  <span>Sending Reset Email...</span>
+                ) : (
+                  <>
+                    <span>Send Reset Link</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -76,7 +103,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
             </div>
             <h3 className="text-xl font-bold text-[#101828]">Reset Link Dispatched</h3>
             <p className="text-sm text-[#667085] mt-2 mb-6">
-              A secure password reset authorization email has been sent to <span className="font-semibold text-[#101828]">{email}</span>. Please check your inbox.
+              A secure password reset link has been dispatched to <span className="font-semibold text-[#101828]">{email}</span> via Supabase Auth.
             </p>
             <button
               onClick={() => {
@@ -84,7 +111,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
                 setEmail('');
                 onClose();
               }}
-              className="w-full py-3 rounded-xl bg-[#0057FF] text-white text-sm font-semibold hover:bg-[#0045CC] transition-colors"
+              className="w-full py-3 rounded-xl bg-[#0057FF] text-white text-sm font-semibold hover:bg-[#0045CC] transition-colors cursor-pointer"
             >
               Back to Sign In
             </button>

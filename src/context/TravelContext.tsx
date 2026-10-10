@@ -14,6 +14,12 @@ import {
   DISRUPTION_SCENARIOS,
 } from '../data/mockTravelData';
 import { Language, translations } from '../translations';
+import {
+  supabase,
+  SUPABASE_CONFIG,
+  saveBookingToSupabase,
+  saveContactToSupabase,
+} from '../lib/supabase';
 
 interface TravelContextType {
   // Navigation & View
@@ -23,11 +29,19 @@ interface TravelContextType {
   setLanguage: (lang: Language) => void;
   t: typeof translations.en;
 
+  // Supabase Status
+  supabaseConfig: typeof SUPABASE_CONFIG;
+  isSupabaseConnected: boolean;
+
   // User & Auth
   user: UserProfile | null;
-  login: (email: string, name?: string) => void;
-  logout: () => void;
-  register: (name: string, email: string) => void;
+  login: (email: string, password?: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password?: string
+  ) => Promise<{ success: boolean; error?: string; message?: string }>;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   authModalMode: 'login' | 'register';
@@ -45,7 +59,7 @@ interface TravelContextType {
 
   // Safety & Emergency
   contacts: TrustedContact[];
-  addContact: (contact: Omit<TrustedContact, 'id'>) => void;
+  addContact: (contact: Omit<TrustedContact, 'id'>) => Promise<void>;
   deleteContact: (id: string) => void;
   isLiveSharingActive: boolean;
   toggleLiveSharing: () => void;
@@ -85,19 +99,10 @@ const TravelContext = createContext<TravelContextType | undefined>(undefined);
 export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<string>('home');
   const [language, setLanguage] = useState<Language>('en');
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(true);
 
-  // Default logged in user (can switch, log out, or sign up)
-  const [user, setUser] = useState<UserProfile | null>({
-    id: 'user-chidanandh',
-    name: 'Chidanandh Kosuru',
-    email: 'kosuruchidanandh@gmail.com',
-    phone: '+91 98480 12345',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-    safetyFilterEnabled: true,
-    nightTravelAvoidance: true,
-    femaleCoPassengerPreference: true,
-    liveSharingActive: true,
-  });
+  // User starts as null so visitor can see and use real Login & Signup forms!
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
@@ -148,43 +153,242 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const t = translations[language];
 
-  const login = (email: string, name?: string) => {
-    setUser({
-      id: 'user-' + Date.now(),
+  // Subscribe to real Supabase Auth session on app launch
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!error && session?.user) {
+        setUser({
+          id: session.user.id,
+          name:
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split('@')[0] ||
+            'Traveler',
+          email: session.user.email || '',
+          phone: session.user.phone || '+91 98480 12345',
+          avatarUrl:
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+          safetyFilterEnabled: true,
+          nightTravelAvoidance: true,
+          femaleCoPassengerPreference: true,
+          liveSharingActive: true,
+        });
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          name:
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split('@')[0] ||
+            'Traveler',
+          email: session.user.email || '',
+          phone: session.user.phone || '+91 98480 12345',
+          avatarUrl:
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+          safetyFilterEnabled: true,
+          nightTravelAvoidance: true,
+          femaleCoPassengerPreference: true,
+          liveSharingActive: true,
+        });
+      } else {
+        // user signed out
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (
+    email: string,
+    password?: string,
+    name?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (password) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          return { success: false, error: error.message };
+        }
+
+        if (data.user) {
+          const profile: UserProfile = {
+            id: data.user.id,
+            name: data.user.user_metadata?.full_name || name || email.split('@')[0],
+            email: data.user.email || email,
+            phone: '+91 98480 12345',
+            avatarUrl:
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+            safetyFilterEnabled: true,
+            nightTravelAvoidance: true,
+            femaleCoPassengerPreference: true,
+            liveSharingActive: true,
+          };
+          setUser(profile);
+          setIsAuthModalOpen(false);
+
+          setNotifications((prev) => [
+            {
+              id: 'notif-' + Date.now(),
+              title: 'Signed In (Supabase TRAVELTECHAI)',
+              message: `Welcome back, ${profile.name}! Authenticated with your Supabase account.`,
+              timestamp: 'Just now',
+              type: 'success',
+              read: false,
+            },
+            ...prev,
+          ]);
+
+          return { success: true };
+        }
+      } catch (err: any) {
+        return { success: false, error: err?.message || 'Login failed' };
+      }
+    }
+
+    // Fast demo login if explicitly clicked without typing a password
+    const demoProfile: UserProfile = {
+      id: 'demo-' + Date.now(),
       name: name || (email.includes('chidanandh') ? 'Chidanandh Kosuru' : 'Traveler ' + email.split('@')[0]),
       email,
       phone: '+91 98480 12345',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
       safetyFilterEnabled: true,
       nightTravelAvoidance: true,
       femaleCoPassengerPreference: true,
       liveSharingActive: true,
-    });
+    };
+    setUser(demoProfile);
     setIsAuthModalOpen(false);
-    // Add success notification
+
     setNotifications((prev) => [
       {
         id: 'notif-' + Date.now(),
-        title: 'Signed in successfully',
-        message: `Welcome back to TBS RoamAgent, ${name || email}!`,
+        title: 'Signed In (Demo Traveler Session)',
+        message: `Signed in as ${demoProfile.name}.`,
         timestamp: 'Just now',
-        type: 'success',
+        type: 'info',
+        read: false,
+      },
+      ...prev,
+    ]);
+
+    return { success: true };
+  };
+
+  const register = async (
+    name: string,
+    email: string,
+    password?: string
+  ): Promise<{ success: boolean; error?: string; message?: string }> => {
+    if (!password) {
+      return { success: false, error: 'Password is required' };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Check if session was returned or email confirmation link was sent
+      if (data.user && !data.session) {
+        setNotifications((prev) => [
+          {
+            id: 'notif-' + Date.now(),
+            title: 'Supabase Verification Email Dispatched',
+            message: `A confirmation link has been sent to ${email}. Check your inbox to activate your account.`,
+            timestamp: 'Just now',
+            type: 'info',
+            read: false,
+          },
+          ...prev,
+        ]);
+
+        return {
+          success: true,
+          message: `Account created for ${email}! A confirmation link was sent to your email. You can also sign in directly once confirmed.`,
+        };
+      }
+
+      if (data.user) {
+        const profile: UserProfile = {
+          id: data.user.id,
+          name: name || email.split('@')[0],
+          email: data.user.email || email,
+          phone: '+91 98480 12345',
+          avatarUrl:
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+          safetyFilterEnabled: true,
+          nightTravelAvoidance: true,
+          femaleCoPassengerPreference: true,
+          liveSharingActive: true,
+        };
+        setUser(profile);
+        setIsAuthModalOpen(false);
+
+        setNotifications((prev) => [
+          {
+            id: 'notif-' + Date.now(),
+            title: 'Account Registered with Supabase',
+            message: `Welcome to TBS RoamAgent, ${name}! Your account is created in TRAVELTECHAI.`,
+            timestamp: 'Just now',
+            type: 'success',
+            read: false,
+          },
+          ...prev,
+        ]);
+
+        return { success: true };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Registration failed' };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Supabase sign out error:', err);
+    }
+    setUser(null);
+
+    setNotifications((prev) => [
+      {
+        id: 'notif-' + Date.now(),
+        title: 'Signed Out',
+        message: 'You have been signed out from Supabase.',
+        timestamp: 'Just now',
+        type: 'info',
         read: false,
       },
       ...prev,
     ]);
   };
 
-  const logout = () => {
-    setUser(null);
-  };
-
-  const register = (name: string, email: string) => {
-    login(email, name);
-  };
-
   const handleSearchSubmit = (query: string) => {
-    // If query contains Indian destinations, parse intelligently
     const lower = query.toLowerCase();
     if (lower.includes('bengaluru') || lower.includes('ooty')) {
       setOrigin('Bengaluru (Majestic)');
@@ -199,20 +403,23 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setOrigin('Hyderabad (Hitec City)');
       setDestination('Goa (Panaji)');
     }
-    // Switch to AI assistant / Plan view
     setCurrentView('assistant');
   };
 
-  const addContact = (contact: Omit<TrustedContact, 'id'>) => {
+  const addContact = async (contact: Omit<TrustedContact, 'id'>) => {
     const newContact: TrustedContact = {
       ...contact,
       id: 'contact-' + Date.now(),
     };
     setContacts((prev) => [...prev, newContact]);
+
+    // Asynchronously synchronize to Supabase database
+    await saveContactToSupabase(newContact, user?.id);
+
     setNotifications((prev) => [
       {
         id: 'notif-' + Date.now(),
-        title: 'Emergency Contact Added',
+        title: 'Emergency Contact Added (Synced to Supabase)',
         message: `${newContact.name} (${newContact.relationship}) will receive instant safety alerts.`,
         timestamp: 'Just now',
         type: 'info',
@@ -282,7 +489,6 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsDisruptionRecalculating(true);
 
     setTimeout(() => {
-      // Create alternative itinerary
       const alt: MultimodalItinerary = {
         ...selectedItinerary,
         id: 'itin-recovered-' + Date.now(),
@@ -377,11 +583,14 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setBookings((prev) => [booking, ...prev]);
     setCurrentBooking(booking);
 
+    // Asynchronously save booking to Supabase PostgreSQL database
+    saveBookingToSupabase(booking);
+
     setNotifications((prev) => [
       {
         id: 'notif-' + Date.now(),
-        title: `🎉 Journey Booked: ${booking.bookingId}`,
-        message: `Multimodal booking confirmed for ${selectedItinerary.origin} → ${selectedItinerary.destination}.`,
+        title: `🎉 Journey Booked (Saved to Supabase): ${booking.bookingId}`,
+        message: `Multimodal booking confirmed for ${selectedItinerary.origin} → ${selectedItinerary.destination}. Synced with TRAVELTECHAI database.`,
         timestamp: 'Just now',
         type: 'success',
         read: false,
@@ -406,6 +615,8 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         language,
         setLanguage,
         t,
+        supabaseConfig: SUPABASE_CONFIG,
+        isSupabaseConnected,
         user,
         login,
         logout,

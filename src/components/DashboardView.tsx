@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { TRAVEL_IMAGES, POPULAR_DESTINATIONS } from '../data/mockTravelData';
+import { SupabaseSyncBanner } from './SupabaseSyncBanner';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -302,6 +303,9 @@ export const DashboardView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Supabase Database & Auth Synchronization Card */}
+      <SupabaseSyncBanner />
 
       {/* Popular Travel Destinations Showcase (Photography-rich section) */}
       <div className="space-y-6 pt-4">

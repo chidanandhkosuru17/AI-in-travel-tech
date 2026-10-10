@@ -76,6 +76,10 @@ export const Navbar: React.FC = () => {
                 <span className="text-[10px] font-semibold bg-[#0057FF]/20 text-[#60A5FA] border border-[#0057FF]/30 px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block">
                   Samartha AI
                 </span>
+                <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider hidden md:inline-flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Supabase</span>
+                </span>
               </div>
               <p className="text-xs text-gray-300 hidden md:block">Agentic Multimodal Travel Concierge</p>
             </div>
@@ -241,6 +245,10 @@ export const Navbar: React.FC = () => {
                       <div className="mt-2 flex items-center gap-1.5 text-[10px] bg-[#EAF0FF] text-[#0057FF] px-2 py-0.5 rounded-md font-semibold">
                         <Shield className="w-3 h-3 text-[#0057FF]" />
                         <span>Women Safety Guard Active</span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1.5 text-[10px] bg-emerald-50 text-[#15803D] px-2 py-0.5 rounded-md font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] animate-pulse" />
+                        <span>Supabase: TRAVELTECHAI</span>
                       </div>
                     </div>
                     <button
