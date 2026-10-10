@@ -13,6 +13,10 @@ import {
   Languages,
   CheckCircle2,
   ChevronDown,
+  PackageSearch,
+  Bus,
+  MessageSquarePlus,
+  Heart,
 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { Language } from '../translations';
@@ -25,6 +29,7 @@ export const Navbar: React.FC = () => {
     setLanguage,
     t,
     user,
+    savedTrips,
     logout,
     setIsAuthModalOpen,
     setAuthModalMode,
@@ -45,7 +50,11 @@ export const Navbar: React.FC = () => {
     { id: 'plan', label: t.nav.planJourney, icon: MapPin },
     { id: 'compare', label: t.nav.compareRoutes, icon: ChevronDown },
     { id: 'safety', label: t.nav.safetyCenter, icon: Shield },
+    { id: 'profile', label: t.nav.userProfile, icon: Heart },
     { id: 'my-journeys', label: t.nav.myJourneys, icon: CheckCircle2 },
+    { id: 'luggage', label: t.nav.lostLuggage, icon: PackageSearch },
+    { id: 'inquiry', label: t.nav.inquiry, icon: MessageSquarePlus },
+    { id: 'driver-portal', label: t.nav.driverPortal, icon: Bus },
   ];
 
   const handleNavClick = (viewId: string) => {
@@ -251,6 +260,23 @@ export const Navbar: React.FC = () => {
                         <span>Supabase: TRAVELTECHAI</span>
                       </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        handleNavClick('profile');
+                        setUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-[#0057FF] bg-[#EAF0FF]/60 hover:bg-[#EAF0FF] flex items-center justify-between cursor-pointer mb-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-pink-600 fill-current" />
+                        <span>My Profile & Saved Trips</span>
+                      </div>
+                      {savedTrips.length > 0 && (
+                        <span className="bg-pink-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                          {savedTrips.length}
+                        </span>
+                      )}
+                    </button>
                     <button
                       onClick={() => {
                         handleNavClick('my-journeys');

@@ -99,4 +99,70 @@ export interface UserProfile {
   nightTravelAvoidance: boolean;
   femaleCoPassengerPreference: boolean;
   liveSharingActive: boolean;
+  role?: 'passenger' | 'driver';
 }
+
+export interface SavedTrip {
+  id: string;
+  userId: string;
+  itineraryId: string;
+  title: string;
+  origin: string;
+  destination: string;
+  totalFare: number;
+  totalDurationMinutes: number;
+  overallSafetyScore: number;
+  transfersCount: number;
+  departureTime: string;
+  arrivalTime: string;
+  itineraryData?: MultimodalItinerary;
+  createdAt: string;
+}
+
+export type LuggageStatus =
+  | 'Reported'
+  | 'Photo Uploaded'
+  | 'Awaiting Passenger Confirmation'
+  | 'Claimed'
+  | 'Return Coordinated';
+
+export interface LostLuggageItem {
+  id: string;
+  trackingNumber: string;
+  driverId: string;
+  driverName: string;
+  driverPhone: string;
+  busNumber: string;
+  operatorName: string;
+  route: string;
+  seatNumber?: string;
+  photoUrl: string;
+  description: string;
+  depotName: string;
+  depotAddress: string;
+  depotCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  reportedAt: string;
+  status: LuggageStatus;
+  claimedByPassengerId?: string;
+  maskedPassengerName?: string;
+  claimToken?: string;
+  pickupOtp?: string;
+  returnMethod?: 'depot_pickup' | 'terminal_helpdesk' | 'courier_dispatch';
+  passengerVerificationNote?: string;
+  coordinationNotes?: string;
+}
+
+export interface DriverProfile {
+  id: string;
+  name: string;
+  badgeNumber: string;
+  phone: string;
+  operator: string;
+  assignedBusNumber: string;
+  currentRoute: string;
+  avatarUrl: string;
+}
+

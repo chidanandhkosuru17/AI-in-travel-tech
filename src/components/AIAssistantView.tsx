@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Zap,
   Info,
+  Heart,
 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { MultimodalItinerary } from '../types/travel';
@@ -36,6 +37,10 @@ export const AIAssistantView: React.FC = () => {
     itineraries,
     setSelectedItinerary,
     setCurrentView,
+    user,
+    toggleSaveTrip,
+    isTripSaved,
+    setIsAuthModalOpen,
   } = useTravel();
 
   const [inputMessage, setInputMessage] = useState('');
@@ -324,13 +329,44 @@ export const AIAssistantView: React.FC = () => {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => handleSelectItinerary(msg.recommendedItinerary!)}
-                        className="w-full py-2.5 rounded-lg bg-[#0057FF] hover:bg-[#0045CC] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <span>View Route Breakdown & Book</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!user) {
+                              setIsAuthModalOpen(true);
+                            } else {
+                              toggleSaveTrip(msg.recommendedItinerary!);
+                            }
+                          }}
+                          className={`p-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center shrink-0 ${
+                            isTripSaved(msg.recommendedItinerary!.id)
+                              ? 'bg-pink-50 border-pink-200 text-pink-600'
+                              : 'bg-white border-[#E4E7EC] text-[#667085] hover:text-pink-600 hover:bg-pink-50'
+                          }`}
+                          title={
+                            !user
+                              ? 'Sign in to like & save trip'
+                              : isTripSaved(msg.recommendedItinerary!.id)
+                              ? 'Remove from liked trips'
+                              : 'Like & Save trip to Supabase'
+                          }
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              isTripSaved(msg.recommendedItinerary!.id) ? 'fill-current text-pink-600' : ''
+                            }`}
+                          />
+                        </button>
+
+                        <button
+                          onClick={() => handleSelectItinerary(msg.recommendedItinerary!)}
+                          className="flex-1 py-2.5 rounded-lg bg-[#0057FF] hover:bg-[#0045CC] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <span>View Route Breakdown & Book</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   )}
 

@@ -17,6 +17,8 @@ import {
   Ticket,
   Leaf,
   Navigation,
+  PackageSearch,
+  Bus,
 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { TRAVEL_IMAGES, POPULAR_DESTINATIONS } from '../data/mockTravelData';
@@ -301,6 +303,54 @@ export const DashboardView: React.FC = () => {
             <span>View Completed Receipts</span>
             <ArrowRight className="w-3.5 h-3.5 text-[#0057FF]" />
           </button>
+        </div>
+
+        {/* Card 7: Lost Luggage Recovery & Driver Portal */}
+        <div className="bg-white rounded-3xl p-6 border border-[#E4E7EC] shadow-md flex flex-col justify-between hover:shadow-lg transition-shadow">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4E7EC]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0057FF] flex items-center gap-1.5">
+                <PackageSearch className="w-4 h-4" />
+                <span>Lost Luggage Recovery</span>
+              </span>
+              <span className="text-[10px] font-bold bg-[#EAF0FF] text-[#0057FF] px-2 py-0.5 rounded-full">
+                OSM Active
+              </span>
+            </div>
+
+            <p className="text-xs text-[#667085] mt-4">
+              Left a bag on the bus? Driver uploads verified photos and logs locker custody with OpenStreetMap turn-by-turn navigation.
+            </p>
+
+            <div className="mt-4 p-3 rounded-2xl bg-[#F8F7F4] border border-[#E4E7EC] space-y-1 text-xs">
+              <div className="flex justify-between items-center text-[#101828]">
+                <span className="font-semibold">Tracking Status</span>
+                <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded text-[10px]">
+                  5-Step Sentinel
+                </span>
+              </div>
+              <p className="text-[11px] text-[#667085]">
+                Confidential ownership verification & 4-digit Pickup PIN handover.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex gap-2">
+            <button
+              onClick={() => setCurrentView('luggage')}
+              className="flex-1 py-2.5 rounded-xl bg-[#0057FF] hover:bg-[#0045CC] text-white text-xs font-bold transition-colors cursor-pointer text-center"
+            >
+              Track Luggage
+            </button>
+            <button
+              onClick={() => setCurrentView('driver-portal')}
+              className="px-3.5 py-2.5 rounded-xl bg-[#F8F7F4] hover:bg-[#EAF0FF] border border-[#E4E7EC] text-[#101828] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+              title="Driver Portal Demo"
+            >
+              <Bus className="w-3.5 h-3.5 text-[#0057FF]" />
+              <span className="hidden sm:inline">Driver Portal</span>
+            </button>
+          </div>
         </div>
       </div>
 

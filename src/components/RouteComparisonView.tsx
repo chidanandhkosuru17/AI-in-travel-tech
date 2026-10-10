@@ -16,6 +16,7 @@ import {
   MapPin,
   ChevronRight,
   CreditCard,
+  Heart,
 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { MultimodalItinerary, JourneyLeg, ItineraryType } from '../types/travel';
@@ -29,6 +30,10 @@ export const RouteComparisonView: React.FC = () => {
     setCurrentView,
     origin,
     destination,
+    user,
+    toggleSaveTrip,
+    isTripSaved,
+    setIsAuthModalOpen,
   } = useTravel();
 
   const [activeTab, setActiveTab] = useState<ItineraryType>(selectedItinerary.type);
@@ -128,9 +133,40 @@ export const RouteComparisonView: React.FC = () => {
                 >
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  {itin.badgeLabel}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!user) {
+                        setIsAuthModalOpen(true);
+                      } else {
+                        toggleSaveTrip(itin);
+                      }
+                    }}
+                    className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+                      isTripSaved(itin.id)
+                        ? 'bg-pink-50 text-pink-600 hover:bg-pink-100 ring-1 ring-pink-200'
+                        : 'bg-gray-100 text-[#667085] hover:text-pink-600 hover:bg-pink-50'
+                    }`}
+                    title={
+                      !user
+                        ? 'Sign in to like & save trip'
+                        : isTripSaved(itin.id)
+                        ? 'Remove from liked trips'
+                        : 'Like & Save trip to Supabase'
+                    }
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-transform active:scale-125 ${
+                        isTripSaved(itin.id) ? 'fill-current text-pink-600' : ''
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
+                    {itin.badgeLabel}
+                  </span>
+                </div>
               </div>
 
               <h3 className="text-lg font-bold text-[#101828]">{itin.title}</h3>
@@ -184,13 +220,40 @@ export const RouteComparisonView: React.FC = () => {
             </h3>
           </div>
 
-          <button
-            onClick={() => handleSelectAndProceed(currentItinerary)}
-            className="px-6 py-3.5 rounded-xl bg-[#0057FF] hover:bg-[#0045CC] text-white text-sm font-bold shadow-lg shadow-[#0057FF]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
-          >
-            <span>Proceed to Booking Approval (₹{currentItinerary.totalFare})</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  setIsAuthModalOpen(true);
+                } else {
+                  toggleSaveTrip(currentItinerary);
+                }
+              }}
+              className={`px-4 py-3.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                isTripSaved(currentItinerary.id)
+                  ? 'bg-pink-50 border-pink-200 text-pink-600'
+                  : 'bg-white border-[#E4E7EC] text-[#101828] hover:bg-[#F8F7F4] hover:text-pink-600'
+              }`}
+            >
+              <Heart
+                className={`w-4 h-4 ${
+                  isTripSaved(currentItinerary.id) ? 'fill-current text-pink-600' : ''
+                }`}
+              />
+              <span>
+                {isTripSaved(currentItinerary.id) ? 'Saved in Profile' : 'Like & Save Trip'}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleSelectAndProceed(currentItinerary)}
+              className="px-6 py-3.5 rounded-xl bg-[#0057FF] hover:bg-[#0045CC] text-white text-sm font-bold shadow-lg shadow-[#0057FF]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <span>Proceed to Booking Approval (₹{currentItinerary.totalFare})</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Legs timeline */}

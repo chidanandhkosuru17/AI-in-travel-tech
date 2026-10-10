@@ -6,12 +6,18 @@ import {
   DisruptionScenario,
   BookingDetails,
   UserProfile,
+  SavedTrip,
+  LostLuggageItem,
+  LuggageStatus,
+  DriverProfile,
 } from '../types/travel';
 import {
   DEFAULT_ITINERARIES,
   DEFAULT_CONTACTS,
   DEFAULT_NOTIFICATIONS,
   DISRUPTION_SCENARIOS,
+  INITIAL_LOST_LUGGAGE,
+  DRIVER_PROFILES,
 } from '../data/mockTravelData';
 import { Language, translations } from '../translations';
 import {
@@ -19,6 +25,9 @@ import {
   SUPABASE_CONFIG,
   saveBookingToSupabase,
   saveContactToSupabase,
+  saveTripToSupabase,
+  removeSavedTripFromSupabase,
+  fetchUserSavedTripsFromSupabase,
 } from '../lib/supabase';
 
 interface TravelContextType {
@@ -88,10 +97,35 @@ interface TravelContextType {
     paymentMethod: 'UPI Demo' | 'Card Demo' | 'Cash on Boarding'
   ) => BookingDetails;
 
+  // Saved / Liked Trips (Stored in Supabase linked to User)
+  savedTrips: SavedTrip[];
+  isTripSaved: (itineraryId: string) => boolean;
+  toggleSaveTrip: (itinerary: MultimodalItinerary) => Promise<{ saved: boolean; error?: string }>;
+  removeSavedTrip: (itineraryId: string) => Promise<void>;
+
   // Notifications
   notifications: TravelNotification[];
   markNotificationAsRead: (id: string) => void;
   unreadNotificationsCount: number;
+
+  // Lost Luggage Recovery
+  lostLuggageItems: LostLuggageItem[];
+  activeDriver: DriverProfile;
+  setActiveDriver: (driver: DriverProfile) => void;
+  isDriverMode: boolean;
+  setIsDriverMode: (isDriver: boolean) => void;
+  reportFoundLuggage: (data: {
+    busNumber: string;
+    route: string;
+    seatNumber?: string;
+    description: string;
+    photoUrl: string;
+    depotName: string;
+    depotAddress: string;
+    depotCoordinates: { lat: number; lng: number };
+  }) => LostLuggageItem;
+  confirmLuggageClaim: (luggageId: string, isMine: boolean, verificationNote?: string) => void;
+  updateLuggageStatus: (luggageId: string, newStatus: LuggageStatus, coordinationNotes?: string) => void;
 }
 
 const TravelContext = createContext<TravelContextType | undefined>(undefined);
@@ -151,6 +185,14 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   ]);
   const [currentBooking, setCurrentBooking] = useState<BookingDetails | null>(null);
 
+  // Saved / Liked Trips (Stored in Supabase linked to user)
+  const [savedTrips, setSavedTrips] = useState<SavedTrip[]>([]);
+
+  // Lost Luggage Recovery State
+  const [lostLuggageItems, setLostLuggageItems] = useState<LostLuggageItem[]>(INITIAL_LOST_LUGGAGE);
+  const [activeDriver, setActiveDriver] = useState<DriverProfile>(DRIVER_PROFILES[0]);
+  const [isDriverMode, setIsDriverMode] = useState<boolean>(false);
+
   const t = translations[language];
 
   // Subscribe to real Supabase Auth session on app launch
@@ -203,6 +245,52 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       subscription.unsubscribe();
     };
   }, []);
+
+  // Fetch user's saved trips whenever user logs in or changes
+  useEffect(() => {
+    if (!user) {
+      setSavedTrips([]);
+      return;
+    }
+
+    // Load from local storage cache first for instant UI response
+    try {
+      const cached = localStorage.getItem(`saved_trips_${user.id}`);
+      if (cached) {
+        setSavedTrips(JSON.parse(cached));
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Synchronize from Supabase
+    fetchUserSavedTripsFromSupabase(user.id).then(({ success, data }) => {
+      if (success && data && data.length > 0) {
+        const mapped: SavedTrip[] = data.map((item: any) => ({
+          id: item.id,
+          userId: item.user_id,
+          itineraryId: item.itinerary_id,
+          title: item.title,
+          origin: item.origin,
+          destination: item.destination,
+          totalFare: Number(item.total_fare),
+          totalDurationMinutes: item.total_duration_minutes,
+          overallSafetyScore: item.overall_safety_score,
+          transfersCount: item.transfers_count,
+          departureTime: item.departure_time,
+          arrivalTime: item.arrival_time,
+          itineraryData: item.itinerary_data,
+          createdAt: item.created_at,
+        }));
+        setSavedTrips(mapped);
+        try {
+          localStorage.setItem(`saved_trips_${user.id}`, JSON.stringify(mapped));
+        } catch (e) {
+          // ignore
+        }
+      }
+    });
+  }, [user?.id]);
 
   const login = async (
     email: string,
@@ -584,7 +672,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCurrentBooking(booking);
 
     // Asynchronously save booking to Supabase PostgreSQL database
-    saveBookingToSupabase(booking);
+    saveBookingToSupabase(booking, user?.id);
 
     setNotifications((prev) => [
       {
@@ -599,6 +687,246 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     ]);
 
     return booking;
+  };
+
+  // Check if a given itinerary is already liked / saved
+  const isTripSaved = (itineraryId: string): boolean => {
+    return savedTrips.some((t) => t.itineraryId === itineraryId);
+  };
+
+  // Toggle save / like trip for logged in user
+  const toggleSaveTrip = async (
+    itinerary: MultimodalItinerary
+  ): Promise<{ saved: boolean; error?: string }> => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return { saved: false, error: 'Please sign in or create an account to like and save trips.' };
+    }
+
+    const alreadySaved = isTripSaved(itinerary.id);
+
+    if (alreadySaved) {
+      // Remove trip
+      const updated = savedTrips.filter((t) => t.itineraryId !== itinerary.id);
+      setSavedTrips(updated);
+      try {
+        localStorage.setItem(`saved_trips_${user.id}`, JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
+
+      await removeSavedTripFromSupabase(user.id, itinerary.id);
+
+      setNotifications((prev) => [
+        {
+          id: 'notif-' + Date.now(),
+          title: 'Trip Removed from Saved',
+          message: `"${itinerary.title}" was removed from your profile.`,
+          timestamp: 'Just now',
+          type: 'info',
+          read: false,
+        },
+        ...prev,
+      ]);
+
+      return { saved: false };
+    } else {
+      // Add / Save trip
+      const newTrip: SavedTrip = {
+        id: 'saved-' + Date.now(),
+        userId: user.id,
+        itineraryId: itinerary.id,
+        title: itinerary.title,
+        origin: itinerary.origin,
+        destination: itinerary.destination,
+        totalFare: itinerary.totalFare,
+        totalDurationMinutes: itinerary.totalDurationMinutes,
+        overallSafetyScore: itinerary.overallSafetyScore,
+        transfersCount: itinerary.transfersCount,
+        departureTime: itinerary.departureTime,
+        arrivalTime: itinerary.arrivalTime,
+        itineraryData: itinerary,
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = [newTrip, ...savedTrips];
+      setSavedTrips(updated);
+      try {
+        localStorage.setItem(`saved_trips_${user.id}`, JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
+
+      // Sync to Supabase table
+      await saveTripToSupabase({
+        userId: user.id,
+        itineraryId: itinerary.id,
+        title: itinerary.title,
+        origin: itinerary.origin,
+        destination: itinerary.destination,
+        totalFare: itinerary.totalFare,
+        totalDurationMinutes: itinerary.totalDurationMinutes,
+        overallSafetyScore: itinerary.overallSafetyScore,
+        transfersCount: itinerary.transfersCount,
+        departureTime: itinerary.departureTime,
+        arrivalTime: itinerary.arrivalTime,
+        itineraryData: itinerary,
+      });
+
+      setNotifications((prev) => [
+        {
+          id: 'notif-' + Date.now(),
+          title: '❤️ Trip Liked & Saved to Supabase',
+          message: `"${itinerary.title}" is saved in your TRAVELTECHAI profile for ${user.name}.`,
+          timestamp: 'Just now',
+          type: 'success',
+          read: false,
+        },
+        ...prev,
+      ]);
+
+      return { saved: true };
+    }
+  };
+
+  const removeSavedTrip = async (itineraryId: string) => {
+    if (!user) return;
+    const updated = savedTrips.filter((t) => t.itineraryId !== itineraryId);
+    setSavedTrips(updated);
+    try {
+      localStorage.setItem(`saved_trips_${user.id}`, JSON.stringify(updated));
+    } catch (e) {
+      // ignore
+    }
+    await removeSavedTripFromSupabase(user.id, itineraryId);
+  };
+
+  const reportFoundLuggage = (data: {
+    busNumber: string;
+    route: string;
+    seatNumber?: string;
+    description: string;
+    photoUrl: string;
+    depotName: string;
+    depotAddress: string;
+    depotCoordinates: { lat: number; lng: number };
+  }): LostLuggageItem => {
+    const newItem: LostLuggageItem = {
+      id: 'lug-' + Date.now(),
+      trackingNumber: `ROAM-BAG-${Math.floor(1000 + Math.random() * 9000)}`,
+      driverId: activeDriver.id,
+      driverName: activeDriver.name,
+      driverPhone: activeDriver.phone,
+      busNumber: data.busNumber,
+      operatorName: activeDriver.operator,
+      route: data.route,
+      seatNumber: data.seatNumber || 'Unassigned / Overhead',
+      photoUrl: data.photoUrl,
+      description: data.description,
+      depotName: data.depotName,
+      depotAddress: data.depotAddress,
+      depotCoordinates: data.depotCoordinates,
+      reportedAt: 'Just now',
+      status: 'Awaiting Passenger Confirmation',
+      pickupOtp: String(Math.floor(1000 + Math.random() * 9000)),
+      maskedPassengerName: 'Waiting for passenger claim...',
+    };
+
+    setLostLuggageItems((prev) => [newItem, ...prev]);
+
+    // Send in-app notification to passengers on that journey
+    setNotifications((prev) => [
+      {
+        id: 'notif-lug-' + Date.now(),
+        title: `🧳 Possible Lost Luggage Found on Bus ${newItem.busNumber}`,
+        message: `Driver ${activeDriver.name} reported found luggage on ${newItem.route} (${newItem.seatNumber}). Tap to review and confirm: "Is this your luggage?"`,
+        timestamp: 'Just now',
+        type: 'alert',
+        read: false,
+      },
+      ...prev,
+    ]);
+
+    return newItem;
+  };
+
+  const confirmLuggageClaim = (luggageId: string, isMine: boolean, verificationNote?: string) => {
+    setLostLuggageItems((prev) =>
+      prev.map((item) => {
+        if (item.id === luggageId) {
+          if (isMine) {
+            const masked = user
+              ? `${user.name.charAt(0)}***** ${user.name.split(' ').slice(-1)[0]?.charAt(0) || ''}.`
+              : 'P***** K.';
+            return {
+              ...item,
+              status: 'Claimed',
+              claimedByPassengerId: user?.id || 'passenger-current',
+              maskedPassengerName: masked,
+              passengerVerificationNote: verificationNote || 'Passenger identified items inside luggage',
+              returnMethod: 'depot_pickup',
+              coordinationNotes: 'Claim verified by passenger. Safe pickup PIN generated for depot handover.',
+            };
+          } else {
+            return item;
+          }
+        }
+        return item;
+      })
+    );
+
+    if (isMine) {
+      setNotifications((prev) => [
+        {
+          id: 'notif-' + Date.now(),
+          title: '✅ Luggage Claim Confirmed',
+          message: `Your ownership claim was verified. Return coordination initiated. Please show your pickup OTP to depot security.`,
+          timestamp: 'Just now',
+          type: 'success',
+          read: false,
+        },
+        ...prev,
+      ]);
+    } else {
+      setNotifications((prev) => [
+        {
+          id: 'notif-' + Date.now(),
+          title: 'Luggage Inquiry Dismissed',
+          message: 'Thank you for confirming. The item remains listed for fellow passengers on the bus.',
+          timestamp: 'Just now',
+          type: 'info',
+          read: false,
+        },
+        ...prev,
+      ]);
+    }
+  };
+
+  const updateLuggageStatus = (luggageId: string, newStatus: LuggageStatus, coordinationNotes?: string) => {
+    setLostLuggageItems((prev) =>
+      prev.map((item) => {
+        if (item.id === luggageId) {
+          return {
+            ...item,
+            status: newStatus,
+            coordinationNotes: coordinationNotes || item.coordinationNotes,
+          };
+        }
+        return item;
+      })
+    );
+
+    setNotifications((prev) => [
+      {
+        id: 'notif-' + Date.now(),
+        title: `Luggage Status Updated: ${newStatus}`,
+        message: `Tracking status updated for luggage item. Protocol: ${coordinationNotes || newStatus}`,
+        timestamp: 'Just now',
+        type: 'info',
+        read: false,
+      },
+      ...prev,
+    ]);
   };
 
   const markNotificationAsRead = (id: string) => {
@@ -652,9 +980,21 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         currentBooking,
         bookings,
         createBooking,
+        savedTrips,
+        isTripSaved,
+        toggleSaveTrip,
+        removeSavedTrip,
         notifications,
         markNotificationAsRead,
         unreadNotificationsCount,
+        lostLuggageItems,
+        activeDriver,
+        setActiveDriver,
+        isDriverMode,
+        setIsDriverMode,
+        reportFoundLuggage,
+        confirmLuggageClaim,
+        updateLuggageStatus,
       }}
     >
       {children}

@@ -31,7 +31,7 @@ export const SupabaseSyncBanner: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-[#667085] mt-1 max-w-2xl leading-relaxed">
-                Project ID: <span className="font-mono font-semibold text-[#101828]">{SUPABASE_CONFIG.projectId}</span>. Authentication, multimodal booking reservations, and trusted safety contacts are synchronized with your Supabase PostgreSQL cluster.
+                Project ID: <span className="font-mono font-semibold text-[#101828]">{SUPABASE_CONFIG.projectId}</span>. Authentication, user-liked & saved trips (<code className="text-[#0057FF] font-mono">saved_trips</code>), multimodal booking reservations, support inquiries, and trusted safety contacts are synchronized with your Supabase PostgreSQL cluster.
               </p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export const SupabaseSyncBanner: React.FC = () => {
             </div>
 
             <p className="text-xs text-[#667085] my-3">
-              To create the <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">bookings</code> and <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">trusted_contacts</code> tables in your project, paste this SQL snippet into your{' '}
+              To create the <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">saved_trips</code>, <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">inquiries</code>, <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">bookings</code> and <code className="bg-[#F8F7F4] px-1.5 py-0.5 rounded font-mono text-[#0057FF]">trusted_contacts</code> tables in your project, paste this SQL snippet into your{' '}
               <a
                 href={`https://supabase.com/dashboard/project/${SUPABASE_CONFIG.projectId}/sql`}
                 target="_blank"

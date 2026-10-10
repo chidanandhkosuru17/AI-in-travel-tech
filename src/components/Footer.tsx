@@ -87,6 +87,50 @@ export const Footer: React.FC = () => {
                   Disruption Simulator
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setCurrentView('luggage');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Lost Luggage Recovery
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setCurrentView('profile');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer text-pink-300 font-medium"
+                >
+                  My Profile & Saved Trips
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setCurrentView('inquiry');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer text-[#60A5FA] font-medium"
+                >
+                  Inquiry & Support Desk
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setCurrentView('driver-portal');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Driver Portal (Demo)
+                </button>
+              </li>
             </ul>
           </div>
 

@@ -1,4 +1,4 @@
-import { MultimodalItinerary, TrustedContact, TravelNotification, DisruptionScenario } from '../types/travel';
+import { MultimodalItinerary, TrustedContact, TravelNotification, DisruptionScenario, LostLuggageItem, DriverProfile } from '../types/travel';
 
 export const TRAVEL_IMAGES = {
   // Main Hero background: Scenic highway with dramatic mountain backdrop & road transit
@@ -389,3 +389,102 @@ export const POPULAR_DESTINATIONS = [
     modes: ['KSRTC Bus', 'Train', 'Trek'],
   },
 ];
+
+export const SAMPLE_LUGGAGE_PHOTOS = [
+  {
+    id: 'photo-1',
+    label: 'Black Hard-shell Cabin Trolley',
+    url: 'https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'photo-2',
+    label: 'Maroon Travel Backpack',
+    url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'photo-3',
+    label: 'Navy Blue Weekend Duffle Bag',
+    url: 'https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'photo-4',
+    label: 'Grey Polycarbonate Suitcase',
+    url: 'https://images.unsplash.com/photo-1581553680321-4fffae59fccd?auto=format&fit=crop&w=800&q=80',
+  },
+];
+
+export const DRIVER_PROFILES: DriverProfile[] = [
+  {
+    id: 'drv-rajesh',
+    name: 'Rajesh Kumar',
+    badgeNumber: 'DRV-KSRTC-8842',
+    phone: '+91 94408 92311',
+    operator: 'KSRTC Airavat Club Class',
+    assignedBusNumber: 'KA-01-F-8842',
+    currentRoute: 'Hubballi Central → Panaji KTC Bus Stand, Goa',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'drv-suresh',
+    name: 'Suresh Patil',
+    badgeNumber: 'DRV-TSRTC-2210',
+    phone: '+91 98860 11203',
+    operator: 'TSRTC City Pushpak AC',
+    assignedBusNumber: 'TS-08-Z-2210',
+    currentRoute: 'Hitec City MMTS → MGBS Intercity Terminal, Hyderabad',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+  },
+];
+
+export const INITIAL_LOST_LUGGAGE: LostLuggageItem[] = [
+  {
+    id: 'lug-001',
+    trackingNumber: 'ROAM-BAG-7829',
+    driverId: 'drv-rajesh',
+    driverName: 'Rajesh Kumar',
+    driverPhone: '+91 94408 92311',
+    busNumber: 'KA-01-F-8842',
+    operatorName: 'KSRTC Airavat Club Class Multi-Axle Volvo',
+    route: 'Hubballi Central → Panaji KTC Bus Stand, Goa',
+    seatNumber: 'Seat 12',
+    photoUrl: 'https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&w=800&q=80',
+    description: 'Black Samsonite 4-wheel cabin trolley with red identification ribbon on handle. Found in overhead rack above Seat 12.',
+    depotName: 'Panaji KTC Central Bus Terminal (Locker Bay 4)',
+    depotAddress: 'Kadamba Transport Corporation, Patto Plaza, Panaji, Goa 403001',
+    depotCoordinates: {
+      lat: 15.4989,
+      lng: 73.834,
+    },
+    reportedAt: 'Today, 03:15 PM',
+    status: 'Awaiting Passenger Confirmation',
+    pickupOtp: '7492',
+    maskedPassengerName: 'C******* K.',
+  },
+  {
+    id: 'lug-002',
+    trackingNumber: 'ROAM-BAG-4410',
+    driverId: 'drv-suresh',
+    driverName: 'Suresh Patil',
+    driverPhone: '+91 98860 11203',
+    busNumber: 'TS-08-Z-2210',
+    operatorName: 'TSRTC Pushpak AC City Express',
+    route: 'Hitec City MMTS → MGBS Intercity Terminal, Hyderabad',
+    seatNumber: 'Seat 8',
+    photoUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
+    description: 'Maroon water-resistant travel backpack with side bottle mesh and grey straps. Left under seat.',
+    depotName: 'MGBS Intercity Bus Station Lost Property Office',
+    depotAddress: 'Mahatma Gandhi Bus Station, Gowliguda, Hyderabad, Telangana 500012',
+    depotCoordinates: {
+      lat: 17.3789,
+      lng: 78.4842,
+    },
+    reportedAt: 'Yesterday, 07:30 PM',
+    status: 'Return Coordinated',
+    pickupOtp: '3318',
+    claimedByPassengerId: 'user-chidanandh',
+    maskedPassengerName: 'A***** S.',
+    returnMethod: 'depot_pickup',
+    coordinationNotes: 'Stored in Secure Safe Locker 14. Passenger verified via PNR IR8923018.',
+  },
+];
+
