@@ -19,6 +19,7 @@ export const translations = {
       createAccount: 'Create Account',
       signOut: 'Sign Out',
       sosQuick: 'SOS Emergency',
+      more: 'More',
     },
     hero: {
       hackathonBadge: 'Samartha Hackathon 2026 • Multimodal AI Agent',
@@ -95,6 +96,7 @@ export const translations = {
       createAccount: 'ఖాతా తెరవండి',
       signOut: 'లాగ్ అవుట్',
       sosQuick: 'SOS అత్యవసర',
+      more: 'మరిన్ని',
     },
     hero: {
       hackathonBadge: 'సమర్థ హ్యాకథాన్ 2026 • మల్టీమోడల్ AI ఏజెంట్',

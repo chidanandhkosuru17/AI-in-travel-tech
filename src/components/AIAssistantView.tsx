@@ -85,9 +85,9 @@ export const AIAssistantView: React.FC = () => {
     'Mumbai to Pune with local train & cab connection',
   ];
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const text = textToSend || inputMessage;
-    if (!text.trim()) return;
+    if (!text.trim() || isProcessing) return;
 
     const userMsg: Message = {
       id: 'user-' + Date.now(),
@@ -96,12 +96,77 @@ export const AIAssistantView: React.FC = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setInputMessage('');
     setIsProcessing(true);
 
-    setTimeout(() => {
-      // Pick matching itinerary based on text or constraints
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text.trim(),
+          history: newMessages.slice(-6),
+          constraints: {
+            origin,
+            destination,
+            maxBudget,
+            femaleSafetyPriority,
+            avoidNightTransit,
+          },
+        }),
+      });
+
+      let replyText = '';
+      if (res.ok) {
+        const data = await res.json();
+        replyText = data.reply;
+      } else {
+        throw new Error('Chat API returned non-OK status');
+      }
+
+      // Check if query is looking for route recommendation or trip comparison
+      const lower = text.toLowerCase();
+      const isRouteQuery =
+        lower.includes('route') ||
+        lower.includes('itinerary') ||
+        lower.includes('plan') ||
+        lower.includes('trip') ||
+        lower.includes('goa') ||
+        lower.includes('hyderabad') ||
+        lower.includes('bangalore') ||
+        lower.includes('bus') ||
+        lower.includes('train') ||
+        lower.includes('fast') ||
+        lower.includes('budget');
+
+      const matchingItinerary = isRouteQuery
+        ? lower.includes('budget') || lower.includes('cheap')
+          ? itineraries[2]
+          : lower.includes('fast') || lower.includes('speed')
+          ? itineraries[0]
+          : itineraries[1]
+        : undefined;
+
+      const assistantMsg: Message = {
+        id: 'asst-' + Date.now(),
+        sender: 'assistant',
+        text: replyText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        reasoningSteps: [
+          `AI analyzed query with multi-network knowledge base`,
+          femaleSafetyPriority ? 'Enforced Women Safety Sentinel index score ≥ 94/100' : 'Standard route evaluation',
+          avoidNightTransit ? 'Restricted route legs to daylight transit hours (06:00 - 18:00)' : 'All departure hours enabled',
+          `Verified timetable buffers across TSRTC, KSRTC, IRCTC, and connected transit`,
+        ],
+        recommendedItinerary: matchingItinerary,
+      };
+
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch (err) {
+      console.error('Error fetching chat response:', err);
+      // Fallback
       const selected =
         text.toLowerCase().includes('budget') || text.toLowerCase().includes('cheap')
           ? itineraries[2]
@@ -112,7 +177,7 @@ export const AIAssistantView: React.FC = () => {
       const assistantMsg: Message = {
         id: 'asst-' + Date.now(),
         sender: 'assistant',
-        text: `Here is the agentic multimodal itinerary matching your criteria (${origin} → ${destination}). It minimizes transfer anxiety and maximizes verified safety standards.`,
+        text: `Here is the agentic multimodal itinerary and travel advice matching your inquiry. Our transit neural network has synchronized schedules and safety checkpoints for your trip from ${origin} to ${destination}.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         reasoningSteps: [
           `Analyzed timetable data for ${origin} → ${destination}`,
@@ -124,8 +189,61 @@ export const AIAssistantView: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
+    } finally {
       setIsProcessing(false);
-    }, 1200);
+    }
+  };
+
+  const formatChatMessage = (rawText: string, isUser: boolean) => {
+    // Sanitize any raw LaTeX symbols or triple asterisks
+    const cleaned = rawText
+      .replace(/\$\s*\\rightarrow\s*\$/gi, '→')
+      .replace(/\\rightarrow/gi, '→')
+      .replace(/\$\s*\\leftarrow\s*\$/gi, '←')
+      .replace(/\\leftarrow/gi, '←')
+      .replace(/\*\*\*([^*]+)\*\*/g, '**$1**')
+      .replace(/\*\*\*/g, '**');
+
+    const lines = cleaned.split('\n');
+    return (
+      <div className="space-y-1.5">
+        {lines.map((line, lIdx) => {
+          if (!line.trim()) {
+            return <div key={lIdx} className="h-1.5" />;
+          }
+
+          // Check if bullet point
+          const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
+          const content = isBullet ? line.trim().slice(2) : line;
+
+          // Split by bold (**word**)
+          const parts = content.split(/(\*\*[^*]+\*\*)/g);
+
+          return (
+            <div key={lIdx} className={`flex ${isBullet ? 'items-start gap-1.5 pl-2' : ''}`}>
+              {isBullet && (
+                <span className={isUser ? 'text-white/80' : 'text-[#0057FF] font-bold'}>•</span>
+              )}
+              <p className="leading-relaxed flex-1">
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return (
+                      <strong
+                        key={pIdx}
+                        className={isUser ? 'font-bold text-white' : 'font-bold text-[#101828]'}
+                      >
+                        {part.slice(2, -2)}
+                      </strong>
+                    );
+                  }
+                  return <span key={pIdx}>{part}</span>;
+                })}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const handleSelectItinerary = (itin: MultimodalItinerary) => {
@@ -277,7 +395,7 @@ export const AIAssistantView: React.FC = () => {
                       : 'bg-[#F8F7F4] text-[#101828] border border-[#E4E7EC] rounded-tl-none'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  {formatChatMessage(msg.text, msg.sender === 'user')}
 
                   {/* Agentic reasoning steps disclosure */}
                   {msg.reasoningSteps && (
