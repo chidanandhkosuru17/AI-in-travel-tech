@@ -53,7 +53,7 @@ export const DashboardView: React.FC = () => {
             <span>Smart Multimodal Travel Hub</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Welcome to TBS RoamAgent
+            Welcome to RouteZen
           </h2>
           <p className="text-sm sm:text-base text-gray-200 font-normal">
             Your journeys, intelligently planned.

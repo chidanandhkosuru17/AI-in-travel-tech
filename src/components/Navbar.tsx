@@ -117,7 +117,7 @@ export const Navbar: React.FC = () => {
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
-                  TBS <span className="text-[#0057FF] bg-white/10 px-1.5 py-0.5 rounded-md">RoamAgent</span>
+                  Route<span className="text-[#0057FF] bg-white/10 px-1.5 py-0.5 rounded-md ml-0.5">Zen</span>
                 </span>
                 <span className="text-[10px] font-semibold bg-[#0057FF]/20 text-[#60A5FA] border border-[#0057FF]/30 px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline-block">
                   Samartha AI

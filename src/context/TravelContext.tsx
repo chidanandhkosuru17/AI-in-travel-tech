@@ -438,7 +438,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           {
             id: 'notif-' + Date.now(),
             title: 'Account Registered with Supabase',
-            message: `Welcome to TBS RoamAgent, ${name}! Your account is created in TRAVELTECHAI.`,
+            message: `Welcome to RouteZen, ${name}! Your account is created in TRAVELTECHAI.`,
             timestamp: 'Just now',
             type: 'success',
             read: false,
@@ -580,7 +580,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const alt: MultimodalItinerary = {
         ...selectedItinerary,
         id: 'itin-recovered-' + Date.now(),
-        title: 'RoamAgent Disruption Recovery Plan',
+        title: 'RouteZen Disruption Recovery Plan',
         tagline: 'Dynamically rerouted around ' + scenario.title,
         badgeLabel: 'Agentic Auto-Recovery',
         totalDurationMinutes: selectedItinerary.totalDurationMinutes + scenario.timeImpactMinutes,
@@ -608,7 +608,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         {
           id: 'notif-' + Date.now(),
           title: `⚠️ Disruption Detected: ${scenario.title}`,
-          message: `${scenario.description}. RoamAgent has generated an alternative schedule.`,
+          message: `${scenario.description}. RouteZen has generated an alternative schedule.`,
           timestamp: 'Just now',
           type: 'warning',
           read: false,

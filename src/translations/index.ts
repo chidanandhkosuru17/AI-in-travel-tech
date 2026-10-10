@@ -2,7 +2,7 @@ export type Language = 'en' | 'te';
 
 export const translations = {
   en: {
-    brandName: 'TBS RoamAgent',
+    brandName: 'RouteZen',
     brandTagline: 'Agentic AI Multimodal Travel Concierge',
     nav: {
       home: 'Home',
@@ -29,7 +29,7 @@ export const translations = {
       planJourneyBtn: 'Plan My Journey',
       exploreFeaturesBtn: 'Explore Features',
       searchPlaceholder:
-        'Where would you like to travel? Tell RoamAgent your destination, dates, budget, and preferences...',
+        'Where would you like to travel? Tell RouteZen your destination, dates, budget, and preferences...',
       planTripBtn: 'Plan My Trip',
       statRating: '4.9/5 Safety Score',
       statRoutes: '30,000+ Multimodal Routes',
@@ -52,7 +52,7 @@ export const translations = {
       demoGoogle: 'Demo Google Authentication',
       demoOneClick: 'Demo Quick Sign-In (Chidanandh K.)',
       registerTitle: 'Create Your Account',
-      registerSubtitle: 'Join RoamAgent for safe multimodal journeys',
+      registerSubtitle: 'Join RouteZen for safe multimodal journeys',
       fullNameLabel: 'Full Name',
       confirmPasswordLabel: 'Confirm Password',
       termsText: 'I agree to the Terms of Service and Privacy Policy',
@@ -74,12 +74,12 @@ export const translations = {
       title: 'Agentic Disruption Simulator',
       subtitle: 'Simulate travel delays, cancellations, and unexpected road blocks to witness real-time multimodal re-routing.',
       simulateBtn: 'Simulate Disruption',
-      agentRecalculating: 'RoamAgent is recalculating optimal alternatives...',
+      agentRecalculating: 'RouteZen is recalculating optimal alternatives...',
       approveAlternative: 'Approve Alternative Plan',
     },
   },
   te: {
-    brandName: 'TBS RoamAgent',
+    brandName: 'RouteZen',
     brandTagline: 'ఏజెంటిక్ AI మల్టీమోడల్ ట్రావెల్ కన్సియర్జ్',
     nav: {
       home: 'హోమ్',
@@ -129,7 +129,7 @@ export const translations = {
       demoGoogle: 'డెమో గూగుల్ లాగిన్',
       demoOneClick: 'డెమో శీఘ్ర లాగిన్ (చిదానంద్ కె.)',
       registerTitle: 'కొత్త ఖాతా సృష్టించండి',
-      registerSubtitle: 'సురక్షితమైన ప్రయాణాల కోసం రోమ్‌ఏజెంట్‌లో చేరండి',
+      registerSubtitle: 'సురక్షితమైన ప్రయాణాల కోసం RouteZen లో చేరండి',
       fullNameLabel: 'పూర్తి పేరు',
       confirmPasswordLabel: 'పాస్‌వర్డ్ నిర్ధారించండి',
       termsText: 'నేను సేవా నిబంధనలు మరియు గోప్యతా విధానానికి అంగీకరిస్తున్నాను',
@@ -151,7 +151,7 @@ export const translations = {
       title: 'అంతరాయాల సిమ్యులేటర్',
       subtitle: 'బస్సు ఆలస్యం లేదా రైలు రద్దు సమయంలో ప్రత్యామ్నాయ మార్గాలను ప్రత్యక్షంగా చూడండి.',
       simulateBtn: 'అంతరాయాన్ని సిమ్యులేట్ చేయండి',
-      agentRecalculating: 'రోమ్‌ఏజెంట్ ప్రత్యామ్నాయ మార్గాలను లెక్కిస్తోంది...',
+      agentRecalculating: 'RouteZen ప్రత్యామ్నాయ మార్గాలను లెక్కిస్తోంది...',
       approveAlternative: 'ప్రత్యామ్నాయ ప్రణాళికను ఆమోదించండి',
     },
   },

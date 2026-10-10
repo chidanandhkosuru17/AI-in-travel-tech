@@ -108,7 +108,7 @@ export const DEFAULT_ITINERARIES: MultimodalItinerary[] = [
     departureTime: '07:00 AM',
     arrivalTime: '04:45 PM',
     carbonEmissionKg: 24.2,
-    dataFreshness: 'Verified by RoamAgent Safety Engine • Police Station Radius < 1.2km',
+    dataFreshness: 'Verified by RouteZen Safety Engine • Police Station Radius < 1.2km',
     isRecommended: true,
     legs: [
       {
@@ -120,7 +120,7 @@ export const DEFAULT_ITINERARIES: MultimodalItinerary[] = [
         arrivalTime: '07:45 AM',
         durationMinutes: 45,
         fare: 480,
-        operatorName: 'Verified RoamAgent Women-First Cab (Ola Pink / Uber Care)',
+        operatorName: 'Verified RouteZen Women-First Cab (Ola Pink / Uber Care)',
         vehicleNumber: 'TS-09-UB-4421',
         seatType: 'Dedicated Sedan',
         transferWaitMinutes: 35,
@@ -313,7 +313,7 @@ export const DISRUPTION_SCENARIOS: DisruptionScenario[] = [
     impactType: 'delay',
     timeImpactMinutes: 45,
     costImpact: 0,
-    recommendedAction: 'RoamAgent agentic re-routing switches transfer to pre-booked electric cab from Belagavi to avoid missing hotel check-in.',
+    recommendedAction: 'RouteZen agentic re-routing switches transfer to pre-booked electric cab from Belagavi to avoid missing hotel check-in.',
   },
   {
     id: 'scen-cancelled',

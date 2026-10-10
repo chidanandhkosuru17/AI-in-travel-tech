@@ -132,7 +132,7 @@ export const BookingCheckoutView: React.FC = () => {
               <div className="space-y-1 text-center sm:text-left">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#0057FF]">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>RoamAgent Verified Sentinel Boarding Token</span>
+                  <span>RouteZen Verified Sentinel Boarding Token</span>
                 </div>
                 <p className="text-xs text-[#667085] max-w-md">
                   Show this digital pass to bus conductors, TTE rail ticket examiners, or metro turnstiles. Real-time GPS sharing has been activated.
@@ -307,7 +307,7 @@ export const BookingCheckoutView: React.FC = () => {
                   className="mt-0.5 rounded border-amber-300 text-[#0057FF] focus:ring-[#0057FF] w-4 h-4 cursor-pointer"
                 />
                 <span className="text-xs font-semibold text-[#101828] leading-relaxed">
-                  <strong>Human-in-the-Loop Explicit Authorization:</strong> I have reviewed the multimodal itinerary, transfer buffers, and fare breakdown. I approve RoamAgent to lock the reservations and activate live safety monitoring.
+                  <strong>Human-in-the-Loop Explicit Authorization:</strong> I have reviewed the multimodal itinerary, transfer buffers, and fare breakdown. I approve RouteZen to lock the reservations and activate live safety monitoring.
                 </span>
               </label>
             </div>

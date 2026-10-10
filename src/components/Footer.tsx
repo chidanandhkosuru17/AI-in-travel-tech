@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
                 <Compass className="w-5 h-5" />
               </div>
               <span className="text-xl font-extrabold tracking-tight">
-                TBS <span className="text-[#0057FF] bg-white/10 px-1.5 py-0.5 rounded-md">RoamAgent</span>
+                Route<span className="text-[#0057FF] bg-white/10 px-1.5 py-0.5 rounded-md ml-0.5">Zen</span>
               </span>
             </div>
             <p className="text-xs sm:text-sm text-gray-400 max-w-md leading-relaxed">
@@ -153,7 +153,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-4">
-          <p>© 2026 TBS RoamAgent. All rights reserved.</p>
+          <p>© 2026 RouteZen. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
             <span>Built with precision for Samartha Hackathon</span>
           </p>

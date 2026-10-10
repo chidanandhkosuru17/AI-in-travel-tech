@@ -30,7 +30,7 @@ function getIntelligentFallback(message: string, constraints?: any): string {
   const query = message.toLowerCase();
 
   if (query.includes('hello') || query.includes('hi') || query.includes('hey')) {
-    return `Hello! I am your TBS RoamAgent AI Concierge. I can answer any travel, route, schedule, safety, or transit questions you have. How can I help you plan your journey today?`;
+    return `Hello! I am your RouteZen AI Concierge. I can answer any travel, route, schedule, safety, or transit questions you have. How can I help you plan your journey today?`;
   }
 
   if (query.includes('goa') || query.includes('beach') || query.includes('panaji')) {
@@ -53,7 +53,7 @@ function getIntelligentFallback(message: string, constraints?: any): string {
   }
 
   if (query.includes('safety') || query.includes('women') || query.includes('emergency')) {
-    return `Traveler & Women Safety Protocol on TBS RoamAgent:
+    return `Traveler & Women Safety Protocol on RouteZen:
 1. **Women Safety Sentinel:** Our algorithms check transit hub police station proximity (< 1.5 km), CCTV density, well-lit transfer points, and verify bus/cab drivers.
 2. **Live Trip Sharing:** Share real-time GPS tracking with designated emergency contacts.
 3. **Emergency Numbers:**
@@ -64,7 +64,7 @@ function getIntelligentFallback(message: string, constraints?: any): string {
   }
 
   if (query.includes('luggage') || query.includes('bag') || query.includes('lost')) {
-    return `Lost Luggage Support on TBS RoamAgent:
+    return `Lost Luggage Support on RouteZen:
 - You can report any missing luggage in our **Lost Luggage** tab.
 - We link luggage QR tags to your PNR and driver manifests across trains, buses, and cabs.
 - If verified, our station agent and driver network initiate recovery with contactless verification.`;
@@ -97,7 +97,7 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const systemPrompt = `You are TBS RoamAgent, an elite multimodal travel AI concierge and assistant (analogous to Gemini AI and ChatGPT).
+    const systemPrompt = `You are RouteZen, an elite multimodal travel AI concierge and assistant (analogous to Gemini AI and ChatGPT).
 You answer ALL user questions with deep expertise, warmth, clarity, and precision.
 You specialize in Indian multimodal travel (intercity buses, Indian Railways Vande Bharat/Express, TSRTC, KSRTC, metro systems, cabs, flights), budget estimation, women's safety protocols, luggage recovery, and itinerary planning, but you are also fully capable of answering general knowledge, destination guides, food recommendations, weather questions, and travel tips.
 
@@ -152,19 +152,43 @@ Style guidelines:
           parts: [{ text: userPrompt }],
         });
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents,
-          config: {
-            systemInstruction: systemPrompt,
-            temperature: 0.7,
-          },
-        });
+        let rawResponseText = '';
+        let sourceUsed = 'gemini-3.8-flash';
 
-        const reply = sanitizeText(response.text || getIntelligentFallback(message, constraints));
-        return res.json({ reply, source: 'gemini-3.8-flash' });
+        try {
+          const response = await ai.models.generateContent({
+            model: 'gemini-3.8-flash',
+            contents,
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.7,
+            },
+          });
+          rawResponseText = response.text || '';
+        } catch (flash38Error: any) {
+          console.warn('gemini-3.8-flash unavailable, attempting gemini-3.1-flash-lite:', flash38Error?.message);
+          try {
+            sourceUsed = 'gemini-3.1-flash-lite';
+            const fallbackResponse = await ai.models.generateContent({
+              model: 'gemini-3.1-flash-lite',
+              contents,
+              config: {
+                systemInstruction: systemPrompt,
+                temperature: 0.7,
+              },
+            });
+            rawResponseText = fallbackResponse.text || '';
+          } catch (liteError: any) {
+            console.warn('gemini-3.1-flash-lite also failed:', liteError?.message);
+            rawResponseText = getIntelligentFallback(message, constraints);
+            sourceUsed = 'intelligent-fallback';
+          }
+        }
+
+        const reply = sanitizeText(rawResponseText || getIntelligentFallback(message, constraints));
+        return res.json({ reply, source: sourceUsed });
       } catch (geminiError: any) {
-        console.warn('Gemini API call failed, falling back:', geminiError?.message);
+        console.warn('Gemini pipeline failed, falling back:', geminiError?.message);
         const reply = sanitizeText(getIntelligentFallback(message, constraints));
         return res.json({ reply, source: 'smart-fallback', note: geminiError?.message });
       }
@@ -206,7 +230,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TBS RoamAgent server running on http://0.0.0.0:${PORT}`);
+    console.log(`RouteZen server running on http://0.0.0.0:${PORT}`);
   });
 }
 

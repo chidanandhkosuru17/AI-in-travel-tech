@@ -46,7 +46,7 @@ export const DisruptionSimulatorView: React.FC = () => {
           {t.disruption.title}
         </h2>
         <p className="text-sm text-[#667085] mt-1 max-w-3xl">
-          {t.disruption.subtitle} Test how RoamAgent dynamically recovers travel schedules during unforeseen delays or cancellations.
+          {t.disruption.subtitle} Test how RouteZen dynamically recovers travel schedules during unforeseen delays or cancellations.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export const DisruptionSimulatorView: React.FC = () => {
         <div className="p-8 rounded-3xl bg-white border border-[#E4E7EC] shadow-lg text-center space-y-4 my-8">
           <div className="w-12 h-12 rounded-full border-4 border-[#0057FF] border-t-transparent animate-spin mx-auto" />
           <h4 className="text-base font-bold text-[#101828]">
-            RoamAgent Multi-Agent Reasoning in Progress...
+            RouteZen Multi-Agent Reasoning in Progress...
           </h4>
           <p className="text-xs text-[#667085] max-w-md mx-auto">
             Evaluating alternate railway departures, bus transfers, and electric cab connections to guarantee arrival with minimal latency.
@@ -182,7 +182,7 @@ export const DisruptionSimulatorView: React.FC = () => {
             <div className="p-6 rounded-2xl bg-[#EAF0FF]/50 border-2 border-[#0057FF] space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#0057FF]">
-                  RoamAgent Recovery Plan
+                  RouteZen Recovery Plan
                 </span>
                 <span className="text-xs font-bold text-white bg-[#0057FF] px-2 py-0.5 rounded shadow">
                   Optimized

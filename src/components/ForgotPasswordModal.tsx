@@ -60,7 +60,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen
             </div>
             <h3 className="text-xl font-bold text-[#101828]">Reset Password</h3>
             <p className="text-sm text-[#667085] mt-1 mb-6">
-              Enter your registered Supabase email address and RoamAgent will send you a secure verification link to reset your password.
+              Enter your registered Supabase email address and RouteZen will send you a secure verification link to reset your password.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">

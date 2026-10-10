@@ -65,7 +65,7 @@ export const LoginCard: React.FC<LoginCardProps> = () => {
               </span>
             </div>
             <p className="text-xs text-[#667085] truncate">{user.email}</p>
-            <p className="text-xs text-[#0057FF] font-medium mt-0.5">RoamAgent Sentinel Guard</p>
+            <p className="text-xs text-[#0057FF] font-medium mt-0.5">RouteZen Sentinel Guard</p>
           </div>
         </div>
 
@@ -193,9 +193,9 @@ export const LoginCard: React.FC<LoginCardProps> = () => {
 
   const handleQuickDemo = async () => {
     setEmail('kosuruchidanandh@gmail.com');
-    setPassword('RoamAgent2026!');
+    setPassword('RouteZen2026!');
     setIsLoading(true);
-    await login('kosuruchidanandh@gmail.com', 'RoamAgent2026!', 'Chidanandh Kosuru');
+    await login('kosuruchidanandh@gmail.com', 'RouteZen2026!', 'Chidanandh Kosuru');
     setIsLoading(false);
   };
 

@@ -54,7 +54,7 @@ export const AIAssistantView: React.FC = () => {
     {
       id: 'msg-welcome',
       sender: 'assistant',
-      text: `Hello! I am TBS RoamAgent, your multimodal travel concierge. I synchronize intercity coaches, Indian Railways (Vande Bharat/Express), metro lines, and verified last-mile cabs while prioritizing female safety and disruption recovery. Where are you heading?`,
+      text: `Hello! I am RouteZen AI Concierge, your multimodal travel concierge. I synchronize intercity coaches, Indian Railways (Vande Bharat/Express), metro lines, and verified last-mile cabs while prioritizing female safety and disruption recovery. Where are you heading?`,
       timestamp: '09:00 AM',
     },
     {
@@ -264,7 +264,7 @@ export const AIAssistantView: React.FC = () => {
           AI Travel Assistant
         </h2>
         <p className="text-sm text-[#667085] mt-1">
-          Chat naturally with RoamAgent. Describe your destination, schedule, and safety preferences to generate intelligent multimodal journeys.
+          Chat naturally with RouteZen. Describe your destination, schedule, and safety preferences to generate intelligent multimodal journeys.
         </p>
       </div>
 
@@ -538,7 +538,7 @@ export const AIAssistantView: React.FC = () => {
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Ask RoamAgent (e.g. Plan fastest route to Vijayawada with women-only sleeper bus)..."
+                placeholder="Ask RouteZen (e.g. Plan fastest route to Vijayawada with women-only sleeper bus)..."
                 className="flex-1 px-4 py-3 text-xs sm:text-sm rounded-xl border border-[#E4E7EC] bg-[#F8F7F4] focus:bg-white focus:outline-none focus:border-[#0057FF] text-[#101828]"
               />
               <button
